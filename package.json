@@ -1,0 +1,32 @@
+{
+  "name": "mercurius-logging",
+  "version": "0.0.0",
+  "description": "Log the GraphQL details",
+  "main": "index.js",
+  "scripts": {
+    "lint": "standard",
+    "lint:fix": "standard --fix",
+    "test": "npm run lint && npm run test:unit",
+    "test:unit": "tap test/**/*.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Eomm/mercurius-logging.git"
+  },
+  "keywords": [],
+  "author": "Manuel Spigolon <behemoth89@gmail.com> (https://github.com/Eomm)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Eomm/mercurius-logging/issues"
+  },
+  "homepage": "https://github.com/Eomm/mercurius-logging#readme",
+  "devDependencies": {
+    "fastify": "^4.4.0",
+    "mercurius": "^10.1.0",
+    "standard": "^17.0.0",
+    "tap": "^16.3.0"
+  },
+  "dependencies": {
+    "fastify-plugin": "^4.2.0"
+  }
+}
