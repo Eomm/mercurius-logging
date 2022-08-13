@@ -45,6 +45,22 @@ const resolvers = {
   }
 }
 
+function buildApp (t, logger, opts) {
+  const app = Fastify({
+    logger,
+    disableRequestLogging: true
+  })
+  t.teardown(app.close.bind(app))
+
+  app.register(mercurius, {
+    schema,
+    resolvers
+  })
+  app.register(mercuriusLogging, opts)
+
+  return app
+}
+
 test('should log every query', async (t) => {
   t.plan(3)
 
@@ -56,17 +72,7 @@ test('should log every query', async (t) => {
     })
   })
 
-  const app = Fastify({
-    logger: { stream },
-    disableRequestLogging: true
-  })
-  t.teardown(app.close.bind(app))
-
-  app.register(mercurius, {
-    schema,
-    resolvers
-  })
-  app.register(mercuriusLogging)
+  const app = buildApp(t, { stream })
 
   const query = `query {
     four: add(x: 2, y: 2)
@@ -77,11 +83,10 @@ test('should log every query', async (t) => {
 
   const response = await app.inject({
     method: 'POST',
-    headers: { 'content-type': 'application/json', 'X-User': 'admin' },
+    headers: { 'content-type': 'application/json' },
     url: '/graphql',
     body: JSON.stringify({ query })
   })
-
   t.same(JSON.parse(response.body), {
     data: {
       four: 4,
@@ -103,27 +108,16 @@ test('should log every mutation', async (t) => {
     })
   })
 
-  const app = Fastify({
-    logger: { stream },
-    disableRequestLogging: true
-  })
-  t.teardown(app.close.bind(app))
-
-  app.register(mercurius, {
-    schema,
-    resolvers
-  })
-  app.register(mercuriusLogging)
+  const app = buildApp(t, { stream })
 
   const query = `mutation {
     plusOne
     minusOne
     another: plusOne
   }`
-
   const response = await app.inject({
     method: 'POST',
-    headers: { 'content-type': 'application/json', 'X-User': 'admin' },
+    headers: { 'content-type': 'application/json' },
     url: '/graphql',
     body: JSON.stringify({ query })
   })
@@ -133,6 +127,34 @@ test('should log every mutation', async (t) => {
       plusOne: 1,
       minusOne: 0,
       another: 1
+    }
+  })
+})
+
+test('should log at debug level', async (t) => {
+  t.plan(4)
+
+  const stream = split(JSON.parse)
+  stream.on('data', line => {
+    t.same(line.level, 20)
+    t.same(line.reqId, 'req-1')
+    t.same(line.graphql, {
+      mutations: ['plusOne']
+    })
+  })
+
+  const app = buildApp(t, { level: 'debug', stream }, { logLevel: 'debug' })
+  const query = 'mutation { plusOne }'
+  const response = await app.inject({
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    url: '/graphql',
+    body: JSON.stringify({ query })
+  })
+
+  t.same(JSON.parse(response.body), {
+    data: {
+      plusOne: 2
     }
   })
 })

@@ -3,11 +3,15 @@
 const fp = require('fastify-plugin')
 
 function mercuriusLogging (app, opts, next) {
-  app.graphql.addHook('preExecution', logGraphQLDetails)
+  const options = Object.assign({}, {
+    logLevel: 'info'
+  }, opts)
+
+  app.graphql.addHook('preExecution', logGraphQLDetails.bind(null, options))
   next()
 }
 
-function logGraphQLDetails (schema, document, context) {
+function logGraphQLDetails (opts, schema, document, context) {
   const reqIdField = context.app.initialConfig.requestIdLogLabel
 
   const queryOps = document.definitions
@@ -20,7 +24,7 @@ function logGraphQLDetails (schema, document, context) {
     .flatMap(d => d.selectionSet.selections)
     .map(selectionSet => selectionSet.name.value)
 
-  context.app.log.info({
+  context.app.log[opts.logLevel]({
     [reqIdField]: context.reply.request.id,
     graphql: {
       queries: queryOps.length > 0 ? queryOps : undefined,
