@@ -101,7 +101,30 @@ You can customize the output of the plugin by passing an options object:
 ```js
 app.register(mercuriusLogging, {
   logLevel: 'debug', // default: 'info'
+  prependAlias: true, // default: false
 })
+```
+
+### logLevel
+
+The log level of the plugin. Note that the `request` logger is used, so you will get the additional
+[request data](https://www.fastify.io/docs/latest/Reference/Logging/#usage) such as the `reqId`.
+
+### prependAlias
+
+Queries and mutations may have an alias. If you want to append the alias to the log, set this option to `true`.
+You will get the following output:
+
+```json
+{
+  "level": 30,
+  "graphql": {
+    "queries": [
+      "firstQuery:myTeam",
+      "secondQuery:myTeam"
+    ]
+  }
+}
 ```
 
 ## License

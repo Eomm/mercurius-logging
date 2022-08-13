@@ -97,6 +97,42 @@ test('should log every query', async (t) => {
   })
 })
 
+test('should log prepend the alias', async (t) => {
+  t.plan(3)
+
+  const stream = split(JSON.parse)
+  stream.on('data', line => {
+    t.same(line.reqId, 'req-1')
+    t.same(line.graphql, {
+      queries: ['four:add', 'six:add', 'echo', 'counter']
+    })
+  })
+
+  const app = buildApp(t, { stream }, { prependAlias: true })
+
+  const query = `query {
+    four: add(x: 2, y: 2)
+    six: add(x: 3, y: 3)
+    echo(msg: "hello")
+    counter
+  }`
+
+  const response = await app.inject({
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    url: '/graphql',
+    body: JSON.stringify({ query })
+  })
+  t.same(JSON.parse(response.body), {
+    data: {
+      four: 4,
+      six: 6,
+      echo: 'hellohello',
+      counter: 0
+    }
+  })
+})
+
 test('should log every mutation', async (t) => {
   t.plan(3)
 

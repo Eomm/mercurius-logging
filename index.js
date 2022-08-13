@@ -4,7 +4,8 @@ const fp = require('fastify-plugin')
 
 function mercuriusLogging (app, opts, next) {
   const options = Object.assign({}, {
-    logLevel: 'info'
+    logLevel: 'info',
+    prependAlias: false
   }, opts)
 
   app.graphql.addHook('preExecution', logGraphQLDetails.bind(null, options))
@@ -12,25 +13,30 @@ function mercuriusLogging (app, opts, next) {
 }
 
 function logGraphQLDetails (opts, schema, document, context) {
-  const reqIdField = context.app.initialConfig.requestIdLogLabel
+  const queryOps = readOps(document, 'query', opts)
+  const mutationOps = readOps(document, 'mutation', opts)
 
-  const queryOps = document.definitions
-    .filter(d => d.kind === 'OperationDefinition' && d.operation === 'query')
-    .flatMap(d => d.selectionSet.selections)
-    .map(selectionSet => selectionSet.name.value)
-
-  const mutationOps = document.definitions
-    .filter(d => d.kind === 'OperationDefinition' && d.operation === 'mutation')
-    .flatMap(d => d.selectionSet.selections)
-    .map(selectionSet => selectionSet.name.value)
-
-  context.app.log[opts.logLevel]({
-    [reqIdField]: context.reply.request.id,
+  context.reply.request.log[opts.logLevel]({
     graphql: {
       queries: queryOps.length > 0 ? queryOps : undefined,
       mutations: mutationOps.length > 0 ? mutationOps : undefined
     }
   })
+}
+
+function readOps (document, operation, opts) {
+  return document.definitions
+    .filter(d => d.kind === 'OperationDefinition' && d.operation === operation)
+    .flatMap(d => d.selectionSet.selections)
+    .map(selectionSet => {
+      const opName = selectionSet.name.value
+
+      if (opts.prependAlias && selectionSet.alias) {
+        return selectionSet.alias.value + ':' + opName
+      }
+
+      return opName
+    })
 }
 
 module.exports = fp(mercuriusLogging,
