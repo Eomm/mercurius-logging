@@ -23,7 +23,7 @@ function logGraphQLDetails (schema, document, context) {
   context.app.log.info({
     [reqIdField]: context.reply.request.id,
     graphql: {
-      queries: queryOps.length > 0 ? queryOps : null,
+      queries: queryOps.length > 0 ? queryOps : undefined,
       mutations: mutationOps.length > 0 ? mutationOps : undefined
     }
   })
