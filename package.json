@@ -13,7 +13,15 @@
     "type": "git",
     "url": "git+https://github.com/Eomm/mercurius-logging.git"
   },
-  "keywords": [],
+  "keywords": [
+    "graphql",
+    "mercurius",
+    "plugin",
+    "logging",
+    "log",
+    "debug",
+    "one-liner"
+  ],
   "author": "Manuel Spigolon <behemoth89@gmail.com> (https://github.com/Eomm)",
   "license": "MIT",
   "bugs": {
