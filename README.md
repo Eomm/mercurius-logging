@@ -85,7 +85,6 @@ const app = Fastify({
   logger: true,
   disableRequestLogging: true
 })
-t.teardown(app.close.bind(app))
 
 app.register(mercurius, {
   schema: yourSchema,
