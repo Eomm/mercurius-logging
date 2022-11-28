@@ -6,7 +6,8 @@ function mercuriusLogging (app, opts, next) {
   const options = Object.assign({}, {
     logLevel: 'info',
     prependAlias: false,
-    logBody: false
+    logBody: false,
+    logVariables: false
   }, opts)
 
   app.graphql.addHook('preExecution', logGraphQLDetails.bind(null, options))
@@ -21,7 +22,8 @@ function logGraphQLDetails (opts, schema, document, context) {
     graphql: {
       queries: queryOps.length > 0 ? queryOps : undefined,
       mutations: mutationOps.length > 0 ? mutationOps : undefined,
-      body: opts.logBody === true ? context.reply.request.body.query : undefined
+      body: opts.logBody === true ? context.reply.request.body.query : undefined,
+      variables: opts.logVariables === true ? context.reply.request.body.variables || null : undefined
     }
   })
 }

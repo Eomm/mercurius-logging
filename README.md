@@ -102,6 +102,7 @@ app.register(mercuriusLogging, {
   logLevel: 'debug', // default: 'info'
   prependAlias: true, // default: false
   logBody: true, // default: false
+  logVariables: true, // default: false
 })
 ```
 
@@ -140,6 +141,25 @@ If you want to include the body of the request in the log output, set this optio
       "secondQuery:myTeam"
     ],
     "body": "query firstQuery { myTeam { name } } query secondQuery { myTeam { name } }"
+  }
+}
+```
+
+### logVariables
+
+If you want to include the request's variables in the log output, set this option to `true`.
+
+```json
+{
+  "level": 30,
+  "graphql": {
+    "queries": [
+      "firstQuery:myTeam",
+      "secondQuery:myTeam"
+    ],
+    "variables": {
+      "teamId": 1
+    }
   }
 }
 ```

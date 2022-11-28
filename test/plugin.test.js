@@ -225,3 +225,68 @@ test('should log the request body', async (t) => {
     data: { four: 4, six: 6, echo: 'hellohello' }
   })
 })
+
+test('should log the request variables', async (t) => {
+  t.plan(3)
+
+  const query = `query boom($num: Int!) {
+    a: add(x: $num, y: $num)
+    b: add(x: $num, y: $num)
+    echo(msg: "hello")
+  }`
+
+  const stream = split(JSON.parse)
+  stream.on('data', line => {
+    t.same(line.reqId, 'req-1')
+    t.same(line.graphql, {
+      queries: ['add', 'add', 'echo'],
+      variables: { num: 2 }
+    })
+  })
+
+  const app = buildApp(t, { stream }, { logVariables: true })
+
+  const response = await app.inject({
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    url: '/graphql',
+    body: JSON.stringify({ query, variables: { num: 2 } })
+  })
+
+  t.same(JSON.parse(response.body), {
+    data: { a: 4, b: 4, echo: 'hellohello' }
+  })
+})
+
+test('should log the request variables as null when missing', async (t) => {
+  t.plan(3)
+
+  const query = `query {
+    add(x: 2, y: 2)
+    echo(msg: "hello")
+  }`
+
+  const stream = split(JSON.parse)
+  stream.on('data', line => {
+    t.same(line.reqId, 'req-1')
+    t.same(line.graphql, {
+      queries: ['add', 'echo'],
+      variables: null
+    })
+  })
+
+  const app = buildApp(t, { stream }, { logVariables: true })
+
+  const response = await app.inject({
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    url: '/graphql',
+    body: JSON.stringify({ query })
+  })
+
+  t.same(JSON.parse(response.body), {
+    data: { add: 4, echo: 'hellohello' }
+  })
+})
+
+// todo multiple operation name
