@@ -70,7 +70,7 @@ When the request contains some mutations:
 
 Here a complete example when you turn on all the log options:
 
-```json
+```json5
 {
   "level": 30,
   "time": 1660395516406,
@@ -148,7 +148,7 @@ The log level of the plugin. Note that the `request` logger is used, so you will
 
 ### prependAlias
 
-Queries and mutations may have an alias. If you want to append the alias to the log, set this option to `true`.
+Queries and mutations may have an alias. If you want to append the alias to the log, set this option to `true`.  
 You will get the following output:
 
 ```json
@@ -166,6 +166,19 @@ You will get the following output:
 ### logBody
 
 If you want to include the body of the request in the log output, set this option to `true`.
+
+You can provide a syncronous function to choose to log the body or not.
+The function must return `true` to log the body.
+
+```js
+app.register(mercuriusLogging, {
+  logBody: function (context) {
+    return context.reply.request.headers['x-debug'] === 'true'
+  }
+})
+```
+
+Here an output example:
 
 ```json
 {

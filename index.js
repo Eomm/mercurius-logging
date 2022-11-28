@@ -2,6 +2,25 @@
 
 const fp = require('fastify-plugin')
 
+function noop () {
+  return undefined
+}
+
+function simpleBody (context) {
+  return context.reply.request.body.query
+}
+
+function conditionalBody (fn, context) {
+  try {
+    if (fn(context) === true) {
+      return context.reply.request.body.query
+    }
+  } catch (error) {
+    context.app.log.debug(error, 'mercurius-logging: error in logBody function')
+  }
+  return undefined
+}
+
 function mercuriusLogging (app, opts, next) {
   const options = Object.assign({}, {
     logLevel: 'info',
@@ -9,6 +28,12 @@ function mercuriusLogging (app, opts, next) {
     logBody: false,
     logVariables: false
   }, opts)
+
+  options.buildBody = opts.logBody === true
+    ? simpleBody
+    : typeof opts.logBody === 'function'
+      ? conditionalBody.bind(null, opts.logBody)
+      : noop
 
   app.graphql.addHook('preExecution', logGraphQLDetails.bind(null, options))
   next()
@@ -23,7 +48,7 @@ function logGraphQLDetails (opts, schema, document, context) {
       queries: queryOps.length > 0 ? queryOps : undefined,
       mutations: mutationOps.length > 0 ? mutationOps : undefined,
       operationName: context.reply.request.body.operationName,
-      body: opts.logBody === true ? context.reply.request.body.query : undefined,
+      body: opts.buildBody(context),
       variables: opts.logVariables === true ? context.reply.request.body.variables || null : undefined
     }
   })

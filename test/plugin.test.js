@@ -87,7 +87,7 @@ test('should log every query', async (t) => {
     url: '/graphql',
     body: JSON.stringify({ query })
   })
-  t.same(JSON.parse(response.body), {
+  t.same(response.json(), {
     data: {
       four: 4,
       six: 6,
@@ -123,7 +123,7 @@ test('should log prepend the alias', async (t) => {
     url: '/graphql',
     body: JSON.stringify({ query })
   })
-  t.same(JSON.parse(response.body), {
+  t.same(response.json(), {
     data: {
       four: 4,
       six: 6,
@@ -158,7 +158,7 @@ test('should log every mutation', async (t) => {
     body: JSON.stringify({ query })
   })
 
-  t.same(JSON.parse(response.body), {
+  t.same(response.json(), {
     data: {
       plusOne: 1,
       minusOne: 0,
@@ -188,7 +188,7 @@ test('should log at debug level', async (t) => {
     body: JSON.stringify({ query })
   })
 
-  t.same(JSON.parse(response.body), {
+  t.same(response.json(), {
     data: {
       plusOne: 2
     }
@@ -221,9 +221,89 @@ test('should log the request body', async (t) => {
     url: '/graphql',
     body: JSON.stringify({ query })
   })
-  t.same(JSON.parse(response.body), {
+  t.same(response.json(), {
     data: { four: 4, six: 6, echo: 'hellohello' }
   })
+})
+
+test('should log the request body based on the function', async (t) => {
+  t.plan(9)
+
+  const query = `query logMe($txt: String!) {
+    echo(msg: $txt)
+  }`
+
+  const stream = split(JSON.parse)
+  stream.on('data', line => {
+    switch (line.reqId) {
+      case 'req-1':
+        t.same(line.graphql, {
+          queries: ['echo']
+        })
+        break
+      case 'req-2':
+        t.same(line.graphql, {
+          queries: ['echo'],
+          body: query
+        })
+        break
+      case 'req-3':
+        t.same(line.graphql, {
+          queries: ['echo']
+        })
+        break
+      default:
+        t.fail('unexpected reqId')
+    }
+  })
+
+  const app = buildApp(t, { stream },
+    {
+      logBody: function (context) {
+        t.pass('logBody called')
+        if (context.reply.request.headers['x-debug'] === 'throw') {
+          throw new Error('some error')
+        }
+        return context.reply.request.headers['x-debug'] === 'true'
+      }
+    }
+  )
+
+  {
+    const response = await app.inject({
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      url: '/graphql',
+      body: JSON.stringify({ query, variables: { txt: 'false' } })
+    })
+    t.same(response.json(), {
+      data: { echo: 'falsefalse' }
+    })
+  }
+
+  {
+    const response = await app.inject({
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-debug': 'true' },
+      url: '/graphql',
+      body: JSON.stringify({ query, variables: { txt: 'true' } })
+    })
+    t.same(response.json(), {
+      data: { echo: 'truetrue' }
+    })
+  }
+
+  {
+    const response = await app.inject({
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-debug': 'throw' },
+      url: '/graphql',
+      body: JSON.stringify({ query, variables: { txt: 'err' } })
+    })
+    t.same(response.json(), {
+      data: { echo: 'errerr' }
+    })
+  }
 })
 
 test('should log the request variables', async (t) => {
@@ -253,7 +333,7 @@ test('should log the request variables', async (t) => {
     body: JSON.stringify({ query, variables: { num: 2 } })
   })
 
-  t.same(JSON.parse(response.body), {
+  t.same(response.json(), {
     data: { a: 4, b: 4, echo: 'hellohello' }
   })
 })
@@ -284,7 +364,7 @@ test('should log the request variables as null when missing', async (t) => {
     body: JSON.stringify({ query })
   })
 
-  t.same(JSON.parse(response.body), {
+  t.same(response.json(), {
     data: { add: 4, echo: 'hellohello' }
   })
 })
@@ -305,8 +385,6 @@ test('should log the whole request when operationName is set', async (t) => {
 
   const stream = split(JSON.parse)
   stream.on('data', line => {
-    console.log(JSON.stringify(line, null, 2))
-
     t.same(line.reqId, 'req-1')
     t.same(line.graphql, {
       queries: ['add', 'add', 'add', 'add'],
@@ -332,5 +410,5 @@ test('should log the whole request when operationName is set', async (t) => {
     })
   })
 
-  t.same(JSON.parse(response.body), { data: { c: 5, d: 5 } })
+  t.same(response.json(), { data: { c: 5, d: 5 } })
 })
