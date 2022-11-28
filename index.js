@@ -22,6 +22,7 @@ function logGraphQLDetails (opts, schema, document, context) {
     graphql: {
       queries: queryOps.length > 0 ? queryOps : undefined,
       mutations: mutationOps.length > 0 ? mutationOps : undefined,
+      operationName: context.reply.request.body.operationName,
       body: opts.logBody === true ? context.reply.request.body.query : undefined,
       variables: opts.logVariables === true ? context.reply.request.body.variables || null : undefined
     }

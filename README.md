@@ -68,6 +68,41 @@ When the request contains some mutations:
 }
 ```
 
+Here a complete example when you turn on all the log options:
+
+```json
+{
+  "level": 30,
+  "time": 1660395516406,
+  "pid": 83316,
+  "hostname": "eomm",
+  "name": "gateway",
+  "reqId": "req-1",
+  "graphql": {
+    "queries": [
+      "a:add",
+      "b:add",
+      "c:add",
+      "d:add"
+    ],
+    "operationName": "baam",
+    "body": "
+      query boom($num: Int!) {
+        a: add(x: $num, y: $num)
+        b: add(x: $num, y: $num)
+      }
+      query baam($num: Int!, $bin: Int!) {
+        c: add(x: $num, y: $bin)
+        d: add(x: $num, y: $bin)
+    }",
+    "variables": {
+      "num": 2,
+      "bin": 3
+    }
+  }
+}
+```
+
 ## Install
 
 ```

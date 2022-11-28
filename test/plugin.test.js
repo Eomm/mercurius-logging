@@ -289,4 +289,48 @@ test('should log the request variables as null when missing', async (t) => {
   })
 })
 
-// todo multiple operation name
+test('should log the whole request when operationName is set', async (t) => {
+  t.plan(3)
+
+  const query = `
+  query boom($num: Int!) {
+    a: add(x: $num, y: $num)
+    b: add(x: $num, y: $num)
+  }
+  query baam($num: Int!, $bin: Int!) {
+    c: add(x: $num, y: $bin)
+    d: add(x: $num, y: $bin)
+  }
+  `
+
+  const stream = split(JSON.parse)
+  stream.on('data', line => {
+    console.log(JSON.stringify(line, null, 2))
+
+    t.same(line.reqId, 'req-1')
+    t.same(line.graphql, {
+      queries: ['add', 'add', 'add', 'add'],
+      operationName: 'baam',
+      body: query,
+      variables: { num: 2, bin: 3 }
+    })
+  })
+
+  const app = buildApp(t, { stream }, {
+    logBody: true,
+    logVariables: true
+  })
+
+  const response = await app.inject({
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    url: '/graphql',
+    body: JSON.stringify({
+      query,
+      operationName: 'baam',
+      variables: { num: 2, bin: 3 }
+    })
+  })
+
+  t.same(JSON.parse(response.body), { data: { c: 5, d: 5 } })
+})
