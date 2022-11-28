@@ -5,7 +5,8 @@ const fp = require('fastify-plugin')
 function mercuriusLogging (app, opts, next) {
   const options = Object.assign({}, {
     logLevel: 'info',
-    prependAlias: false
+    prependAlias: false,
+    logBody: false
   }, opts)
 
   app.graphql.addHook('preExecution', logGraphQLDetails.bind(null, options))
@@ -19,7 +20,8 @@ function logGraphQLDetails (opts, schema, document, context) {
   context.reply.request.log[opts.logLevel]({
     graphql: {
       queries: queryOps.length > 0 ? queryOps : undefined,
-      mutations: mutationOps.length > 0 ? mutationOps : undefined
+      mutations: mutationOps.length > 0 ? mutationOps : undefined,
+      body: opts.logBody === true ? context.reply.request.body.query : undefined
     }
   })
 }

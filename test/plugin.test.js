@@ -194,3 +194,34 @@ test('should log at debug level', async (t) => {
     }
   })
 })
+
+test('should log the request body', async (t) => {
+  t.plan(3)
+
+  const query = `query {
+    four: add(x: 2, y: 2)
+    six: add(x: 3, y: 3)
+    echo(msg: "hello")
+  }`
+
+  const stream = split(JSON.parse)
+  stream.on('data', line => {
+    t.same(line.reqId, 'req-1')
+    t.same(line.graphql, {
+      queries: ['add', 'add', 'echo'],
+      body: query
+    })
+  })
+
+  const app = buildApp(t, { stream }, { logBody: true })
+
+  const response = await app.inject({
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    url: '/graphql',
+    body: JSON.stringify({ query })
+  })
+  t.same(JSON.parse(response.body), {
+    data: { four: 4, six: 6, echo: 'hellohello' }
+  })
+})

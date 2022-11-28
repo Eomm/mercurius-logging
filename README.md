@@ -101,6 +101,7 @@ You can customize the output of the plugin by passing an options object:
 app.register(mercuriusLogging, {
   logLevel: 'debug', // default: 'info'
   prependAlias: true, // default: false
+  logBody: true, // default: false
 })
 ```
 
@@ -125,6 +126,24 @@ You will get the following output:
   }
 }
 ```
+
+### logBody
+
+If you want to include the body of the request in the log output, set this option to `true`.
+
+```json
+{
+  "level": 30,
+  "graphql": {
+    "queries": [
+      "firstQuery:myTeam",
+      "secondQuery:myTeam"
+    ],
+    "body": "query firstQuery { myTeam { name } } query secondQuery { myTeam { name } }"
+  }
+}
+```
+
 
 ## License
 
