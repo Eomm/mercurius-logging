@@ -68,6 +68,41 @@ When the request contains some mutations:
 }
 ```
 
+Here a complete example when you turn on all the log options:
+
+```json5
+{
+  "level": 30,
+  "time": 1660395516406,
+  "pid": 83316,
+  "hostname": "eomm",
+  "name": "gateway",
+  "reqId": "req-1",
+  "graphql": {
+    "queries": [
+      "a:add",
+      "b:add",
+      "c:add",
+      "d:add"
+    ],
+    "operationName": "baam",
+    "body": "
+      query boom($num: Int!) {
+        a: add(x: $num, y: $num)
+        b: add(x: $num, y: $num)
+      }
+      query baam($num: Int!, $bin: Int!) {
+        c: add(x: $num, y: $bin)
+        d: add(x: $num, y: $bin)
+    }",
+    "variables": {
+      "num": 2,
+      "bin": 3
+    }
+  }
+}
+```
+
 ## Install
 
 ```
@@ -101,6 +136,8 @@ You can customize the output of the plugin by passing an options object:
 app.register(mercuriusLogging, {
   logLevel: 'debug', // default: 'info'
   prependAlias: true, // default: false
+  logBody: true, // default: false
+  logVariables: true, // default: false
 })
 ```
 
@@ -111,7 +148,7 @@ The log level of the plugin. Note that the `request` logger is used, so you will
 
 ### prependAlias
 
-Queries and mutations may have an alias. If you want to append the alias to the log, set this option to `true`.
+Queries and mutations may have an alias. If you want to append the alias to the log, set this option to `true`.  
 You will get the following output:
 
 ```json
@@ -125,6 +162,56 @@ You will get the following output:
   }
 }
 ```
+
+### logBody
+
+If you want to include the body of the request in the log output, set this option to `true`.
+
+You can provide a syncronous function to choose to log the body or not.
+The function must return `true` to log the body.
+
+```js
+app.register(mercuriusLogging, {
+  logBody: function (context) {
+    return context.reply.request.headers['x-debug'] === 'true'
+  }
+})
+```
+
+Here an output example:
+
+```json
+{
+  "level": 30,
+  "graphql": {
+    "queries": [
+      "firstQuery:myTeam",
+      "secondQuery:myTeam"
+    ],
+    "body": "query firstQuery { myTeam { name } } query secondQuery { myTeam { name } }"
+  }
+}
+```
+
+### logVariables
+
+If you want to include the request's variables in the log output, set this option to `true`.
+
+```json
+{
+  "level": 30,
+  "graphql": {
+    "queries": [
+      "firstQuery:myTeam",
+      "secondQuery:myTeam"
+    ],
+    "variables": {
+      "teamId": 1
+    }
+  }
+}
+```
+
 
 ## License
 
