@@ -2,15 +2,15 @@
 import fastify from 'fastify'
 import { MercuriusContext } from 'mercurius'
 
-import mercuriusLogging from '../';
+import plugin from '../'
 
 const app = fastify()
 
 // 1. Basic usage: default types
-app.register(mercuriusLogging)
+app.register(plugin)
 
 // 2. Using options
-app.register(mercuriusLogging, {
+app.register(plugin, {
   logLevel: 'info',
   prependAlias: true,
   logBody: true,
@@ -18,7 +18,7 @@ app.register(mercuriusLogging, {
 })
 
 // 3. Using options with different types
-app.register(mercuriusLogging, {
+app.register(plugin, {
   logLevel: 'info',
   prependAlias: false,
   logBody: (context: MercuriusContext) => true,

@@ -1,3 +1,5 @@
+/* eslint no-use-before-define: "off" */
+
 import { FastifyPluginCallback } from 'fastify'
 import { MercuriusContext } from 'mercurius'
 
@@ -11,9 +13,9 @@ declare namespace mercuriusLogging {
     logVariables?: boolean
   }
 
-  export const mercuriusLogging: MercuriusLogging;
-  export { mercuriusLogging as default };
+  export const mercuriusLogging: MercuriusLogging
+  export { mercuriusLogging as default }
 }
 
-declare function mercuriusLogging(...params: Parameters<MercuriusLogging>): ReturnType<MercuriusLogging>
-export = mercuriusLogging
+declare function plugin(...params: Parameters<MercuriusLogging>): ReturnType<MercuriusLogging>
+export = plugin
