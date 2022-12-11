@@ -3,11 +3,14 @@
   "version": "1.1.0",
   "description": "Log the GraphQL details",
   "main": "index.js",
+  "types": "types/index.d.ts",
   "scripts": {
-    "lint": "standard",
+    "lint": "standard && npm run lint:typescript",
     "lint:fix": "standard --fix",
-    "test": "npm run lint && npm run test:unit",
-    "test:unit": "tap test/**/*.test.js"
+    "lint:typescript": "standard --parser @typescript-eslint/parser --plugin @typescript-eslint/eslint-plugin types/**/*.ts",
+    "test": "tap test/**/*.test.js && tsd",
+    "test:unit": "tap test/**/*.test.js",
+    "test:types": "tsd"
   },
   "repository": {
     "type": "git",
@@ -20,6 +23,8 @@
     "logging",
     "log",
     "debug",
+    "fastify",
+    "fastify-plugin",
     "one-liner"
   ],
   "author": "Manuel Spigolon <behemoth89@gmail.com> (https://github.com/Eomm)",
@@ -29,11 +34,15 @@
   },
   "homepage": "https://github.com/Eomm/mercurius-logging#readme",
   "devDependencies": {
+    "@types/node": "^18.11.12",
+    "@typescript-eslint/eslint-plugin": "^5.46.0",
+    "@typescript-eslint/parser": "^5.46.0",
     "fastify": "^4.4.0",
     "mercurius": "^11.0.0",
     "split2": "^4.1.0",
     "standard": "^17.0.0",
-    "tap": "^16.3.0"
+    "tap": "^16.3.0",
+    "tsd": "^0.25.0"
   },
   "dependencies": {
     "fastify-plugin": "^4.2.0"

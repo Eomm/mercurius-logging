@@ -69,10 +69,14 @@ function readOps (document, operation, opts) {
     })
 }
 
-module.exports = fp(mercuriusLogging,
+const plugin = fp(mercuriusLogging,
   {
     name: 'mercurius-logging',
     fastify: '4.x',
     dependencies: ['mercurius']
   }
 )
+
+module.exports = plugin
+module.exports.default = plugin
+module.exports.mercuriusLogging = plugin
