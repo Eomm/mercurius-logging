@@ -1,6 +1,6 @@
 'use strict'
 
-const { test } = require('tap')
+const test = require('ava')
 const Fastify = require('fastify')
 const mercurius = require('mercurius')
 const split = require('split2')
@@ -66,8 +66,8 @@ test('should log every query', async (t) => {
 
   const stream = split(JSON.parse)
   stream.on('data', line => {
-    t.same(line.reqId, 'req-1')
-    t.same(line.graphql, {
+    t.is(line.reqId, 'req-1')
+    t.deepEqual(line.graphql, {
       queries: ['add', 'add', 'echo', 'counter']
     })
   })
@@ -87,7 +87,7 @@ test('should log every query', async (t) => {
     url: '/graphql',
     body: JSON.stringify({ query })
   })
-  t.same(response.json(), {
+  t.deepEqual(response.json(), {
     data: {
       four: 4,
       six: 6,
@@ -102,8 +102,8 @@ test('should log prepend the alias', async (t) => {
 
   const stream = split(JSON.parse)
   stream.on('data', line => {
-    t.same(line.reqId, 'req-1')
-    t.same(line.graphql, {
+    t.is(line.reqId, 'req-1')
+    t.deepEqual(line.graphql, {
       queries: ['four:add', 'six:add', 'echo', 'counter']
     })
   })
@@ -123,7 +123,7 @@ test('should log prepend the alias', async (t) => {
     url: '/graphql',
     body: JSON.stringify({ query })
   })
-  t.same(response.json(), {
+  t.deepEqual(response.json(), {
     data: {
       four: 4,
       six: 6,
@@ -138,8 +138,8 @@ test('should log every mutation', async (t) => {
 
   const stream = split(JSON.parse)
   stream.on('data', line => {
-    t.same(line.reqId, 'req-1')
-    t.same(line.graphql, {
+    t.is(line.reqId, 'req-1')
+    t.deepEqual(line.graphql, {
       mutations: ['plusOne', 'minusOne', 'plusOne']
     })
   })
@@ -158,7 +158,7 @@ test('should log every mutation', async (t) => {
     body: JSON.stringify({ query })
   })
 
-  t.same(response.json(), {
+  t.deepEqual(response.json(), {
     data: {
       plusOne: 1,
       minusOne: 0,
@@ -172,9 +172,9 @@ test('should log at debug level', async (t) => {
 
   const stream = split(JSON.parse)
   stream.on('data', line => {
-    t.same(line.level, 20)
-    t.same(line.reqId, 'req-1')
-    t.same(line.graphql, {
+    t.is(line.level, 20)
+    t.is(line.reqId, 'req-1')
+    t.deepEqual(line.graphql, {
       mutations: ['plusOne']
     })
   })
@@ -188,7 +188,7 @@ test('should log at debug level', async (t) => {
     body: JSON.stringify({ query })
   })
 
-  t.same(response.json(), {
+  t.deepEqual(response.json(), {
     data: {
       plusOne: 2
     }
@@ -206,8 +206,8 @@ test('should log the request body', async (t) => {
 
   const stream = split(JSON.parse)
   stream.on('data', line => {
-    t.same(line.reqId, 'req-1')
-    t.same(line.graphql, {
+    t.is(line.reqId, 'req-1')
+    t.deepEqual(line.graphql, {
       queries: ['add', 'add', 'echo'],
       body: query
     })
@@ -221,7 +221,7 @@ test('should log the request body', async (t) => {
     url: '/graphql',
     body: JSON.stringify({ query })
   })
-  t.same(response.json(), {
+  t.deepEqual(response.json(), {
     data: { four: 4, six: 6, echo: 'hellohello' }
   })
 })
@@ -237,18 +237,18 @@ test('should log the request body based on the function', async (t) => {
   stream.on('data', line => {
     switch (line.reqId) {
       case 'req-1':
-        t.same(line.graphql, {
+        t.deepEqual(line.graphql, {
           queries: ['echo']
         })
         break
       case 'req-2':
-        t.same(line.graphql, {
+        t.deepEqual(line.graphql, {
           queries: ['echo'],
           body: query
         })
         break
       case 'req-3':
-        t.same(line.graphql, {
+        t.deepEqual(line.graphql, {
           queries: ['echo']
         })
         break
@@ -276,7 +276,7 @@ test('should log the request body based on the function', async (t) => {
       url: '/graphql',
       body: JSON.stringify({ query, variables: { txt: 'false' } })
     })
-    t.same(response.json(), {
+    t.deepEqual(response.json(), {
       data: { echo: 'falsefalse' }
     })
   }
@@ -288,7 +288,7 @@ test('should log the request body based on the function', async (t) => {
       url: '/graphql',
       body: JSON.stringify({ query, variables: { txt: 'true' } })
     })
-    t.same(response.json(), {
+    t.deepEqual(response.json(), {
       data: { echo: 'truetrue' }
     })
   }
@@ -300,7 +300,7 @@ test('should log the request body based on the function', async (t) => {
       url: '/graphql',
       body: JSON.stringify({ query, variables: { txt: 'err' } })
     })
-    t.same(response.json(), {
+    t.deepEqual(response.json(), {
       data: { echo: 'errerr' }
     })
   }
@@ -317,8 +317,8 @@ test('should log the request variables', async (t) => {
 
   const stream = split(JSON.parse)
   stream.on('data', line => {
-    t.same(line.reqId, 'req-1')
-    t.same(line.graphql, {
+    t.is(line.reqId, 'req-1')
+    t.deepEqual(line.graphql, {
       queries: ['add', 'add', 'echo'],
       variables: { num: 2 }
     })
@@ -333,7 +333,7 @@ test('should log the request variables', async (t) => {
     body: JSON.stringify({ query, variables: { num: 2 } })
   })
 
-  t.same(response.json(), {
+  t.deepEqual(response.json(), {
     data: { a: 4, b: 4, echo: 'hellohello' }
   })
 })
@@ -348,8 +348,8 @@ test('should log the request variables as null when missing', async (t) => {
 
   const stream = split(JSON.parse)
   stream.on('data', line => {
-    t.same(line.reqId, 'req-1')
-    t.same(line.graphql, {
+    t.is(line.reqId, 'req-1')
+    t.deepEqual(line.graphql, {
       queries: ['add', 'echo'],
       variables: null
     })
@@ -364,7 +364,7 @@ test('should log the request variables as null when missing', async (t) => {
     body: JSON.stringify({ query })
   })
 
-  t.same(response.json(), {
+  t.deepEqual(response.json(), {
     data: { add: 4, echo: 'hellohello' }
   })
 })
@@ -385,8 +385,8 @@ test('should log the whole request when operationName is set', async (t) => {
 
   const stream = split(JSON.parse)
   stream.on('data', line => {
-    t.same(line.reqId, 'req-1')
-    t.same(line.graphql, {
+    t.is(line.reqId, 'req-1')
+    t.deepEqual(line.graphql, {
       queries: ['add', 'add', 'add', 'add'],
       operationName: 'baam',
       body: query,
@@ -410,5 +410,5 @@ test('should log the whole request when operationName is set', async (t) => {
     })
   })
 
-  t.same(response.json(), { data: { c: 5, d: 5 } })
+  t.deepEqual(response.json(), { data: { c: 5, d: 5 } })
 })
