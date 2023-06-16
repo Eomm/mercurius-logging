@@ -54,7 +54,8 @@ function buildApp (t, logger, opts) {
 
   app.register(mercurius, {
     schema,
-    resolvers
+    resolvers,
+    allowBatchedQueries: true
   })
   app.register(mercuriusLogging, opts)
 
@@ -95,6 +96,61 @@ test('should log every query', async (t) => {
       counter: 0
     }
   })
+})
+
+test('should log batched queries', async (t) => {
+  const stream = split(JSON.parse)
+  stream.on('data', (line) => {
+    t.is(line.reqId, 'req-1')
+    switch (line.graphql.operationName) {
+      case 'QueryOne':
+        t.deepEqual(line.graphql, {
+          operationName: 'QueryOne',
+          queries: ['counter'],
+          variables: null
+        })
+        break
+      case 'QueryTwo':
+        t.deepEqual(line.graphql, {
+          operationName: 'QueryTwo',
+          queries: ['add'],
+          variables: { y: 2 }
+        })
+        break
+    }
+  })
+
+  const app = buildApp(t, { stream }, { logVariables: true })
+
+  const query1 = `query QueryOne {
+    counter
+  }`
+
+  const query2 = `query QueryTwo($y: Int!) {
+    four: add(x: 2, y: $y)
+  }`
+
+  const response = await app.inject({
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    url: '/graphql',
+    body: JSON.stringify([
+      { operationName: 'QueryOne', query: query1 },
+      { operationName: 'QueryTwo', query: query2, variables: { y: 2 } }
+    ])
+  })
+  t.deepEqual(response.json(), [
+    {
+      data: {
+        counter: 0
+      }
+    },
+    {
+      data: {
+        four: 4
+      }
+    }
+  ])
 })
 
 test('should log prepend the alias', async (t) => {
@@ -234,21 +290,24 @@ test('should log the request body based on the function', async (t) => {
   }`
 
   const stream = split(JSON.parse)
-  stream.on('data', line => {
+  stream.on('data', (line) => {
     switch (line.reqId) {
       case 'req-1':
         t.deepEqual(line.graphql, {
+          operationName: 'logMe',
           queries: ['echo']
         })
         break
       case 'req-2':
         t.deepEqual(line.graphql, {
+          operationName: 'logMe',
           queries: ['echo'],
           body: query
         })
         break
       case 'req-3':
         t.deepEqual(line.graphql, {
+          operationName: 'logMe',
           queries: ['echo']
         })
         break
@@ -257,7 +316,9 @@ test('should log the request body based on the function', async (t) => {
     }
   })
 
-  const app = buildApp(t, { stream },
+  const app = buildApp(
+    t,
+    { stream },
     {
       logBody: function (context) {
         t.pass('logBody called')
@@ -319,6 +380,7 @@ test('should log the request variables', async (t) => {
   stream.on('data', line => {
     t.is(line.reqId, 'req-1')
     t.deepEqual(line.graphql, {
+      operationName: 'boom',
       queries: ['add', 'add', 'echo'],
       variables: { num: 2 }
     })
@@ -394,10 +456,14 @@ test('should log the whole request when operationName is set', async (t) => {
     })
   })
 
-  const app = buildApp(t, { stream }, {
-    logBody: true,
-    logVariables: true
-  })
+  const app = buildApp(
+    t,
+    { stream },
+    {
+      logBody: true,
+      logVariables: true
+    }
+  )
 
   const response = await app.inject({
     method: 'POST',
