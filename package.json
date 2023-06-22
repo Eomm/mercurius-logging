@@ -8,7 +8,7 @@
     "lint": "standard && npm run lint:typescript",
     "lint:fix": "standard --fix",
     "lint:typescript": "standard --parser @typescript-eslint/parser --plugin @typescript-eslint/eslint-plugin types/**/*.ts",
-    "test": "ava & tsd",
+    "test": "c8 --100 ava & tsd",
     "test:unit": "ava",
     "test:types": "tsd"
   },
@@ -38,6 +38,7 @@
     "@typescript-eslint/eslint-plugin": "^5.46.0",
     "@typescript-eslint/parser": "^5.46.0",
     "ava": "^5.3.1",
+    "c8": "^8.0.0",
     "fastify": "^4.4.0",
     "mercurius": "^13.0.0",
     "split2": "^4.1.0",
