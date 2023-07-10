@@ -6,14 +6,14 @@ function noop () {
   return undefined
 }
 
-function simpleBody (context, body) {
-  return body?.query ?? context.reply.request.body.query
+function simpleBody (_context, body) {
+  return body.query
 }
 
 function conditionalBody (fn, context, body) {
   try {
     if (fn(context, body) === true) {
-      return body?.query ?? context.reply.request.body.query
+      return body.query
     }
   } catch (error) {
     context.app.log.debug(error, 'mercurius-logging: error in logBody function')
@@ -71,7 +71,7 @@ function readOperationName (document) {
   return document.definitions
     .filter((d) => d.kind === 'OperationDefinition')
     .map((d) => d.name)
-    .filter((d) => d?.kind === 'Name')[0]?.value
+    .find((d) => d?.kind === 'Name')?.value
 }
 
 function readOps (document, operation, opts) {

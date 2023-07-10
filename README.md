@@ -148,7 +148,7 @@ The log level of the plugin. Note that the `request` logger is used, so you will
 
 ### prependAlias
 
-Queries and mutations may have an alias. If you want to append the alias to the log, set this option to `true`.  
+Queries and mutations may have an alias. If you want to append the alias to the log, set this option to `true`.
 You will get the following output:
 
 ```json
@@ -172,7 +172,7 @@ The function must return `true` to log the body.
 
 ```js
 app.register(mercuriusLogging, {
-  logBody: function (context) {
+  logBody: function (context, body) {
     return context.reply.request.headers['x-debug'] === 'true'
   }
 })
