@@ -54,7 +54,8 @@ function buildApp (t, logger, opts) {
 
   app.register(mercurius, {
     schema,
-    resolvers
+    resolvers,
+    allowBatchedQueries: true
   })
   app.register(mercuriusLogging, opts)
 
@@ -95,6 +96,213 @@ test('should log every query', async (t) => {
       counter: 0
     }
   })
+})
+
+test('should log batched queries when logBody is false', async (t) => {
+  t.plan(6)
+  const stream = split(JSON.parse)
+  stream.on('data', (line) => {
+    t.is(line.reqId, 'req-1')
+    switch (line.graphql?.operationName) {
+      case 'QueryOne':
+        t.deepEqual(line.graphql, {
+          operationName: 'QueryOne',
+          queries: ['counter'],
+          variables: null
+        })
+        break
+      case 'QueryTwo':
+        t.deepEqual(line.graphql, {
+          operationName: 'QueryTwo',
+          queries: ['add'],
+          variables: { y: 2 }
+        })
+        break
+    }
+  })
+
+  const app = buildApp(t, { stream }, { logVariables: true })
+
+  const query1 = `query QueryOne {
+    counter
+  }`
+
+  const query2 = `query QueryTwo($y: Int!) {
+    four: add(x: 2, y: $y)
+  }`
+
+  const response = await app.inject({
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    url: '/graphql',
+    body: JSON.stringify([
+      { operationName: 'QueryOne', query: query1 },
+      { operationName: 'QueryTwo', query: query2, variables: { y: 2 } },
+      { operationName: 'BadQuery', query: 'query DoubleQuery ($x: Int!) {---' } // Malformed query
+    ])
+  })
+  t.deepEqual(response.json(), [
+    {
+      data: {
+        counter: 0
+      }
+    },
+    {
+      data: {
+        four: 4
+      }
+    },
+    {
+      data: null,
+      errors: [
+        {
+          locations: [{ column: 32, line: 1 }],
+          message: 'Syntax Error: Invalid number, expected digit but got: "-".'
+        }
+      ]
+    }
+  ])
+})
+
+test('should log batched queries when logBody is true', async (t) => {
+  t.plan(6)
+  const stream = split(JSON.parse)
+  stream.on('data', (line) => {
+    t.is(line.reqId, 'req-1')
+    switch (line.graphql?.operationName) {
+      case 'QueryOne':
+        t.deepEqual(line.graphql, {
+          operationName: 'QueryOne',
+          queries: ['counter'],
+          body: 'query QueryOne {\n    counter\n  }',
+          variables: null
+        })
+        break
+      case 'QueryTwo':
+        t.deepEqual(line.graphql, {
+          operationName: 'QueryTwo',
+          queries: ['add'],
+          body: 'query QueryTwo($y: Int!) {\n    four: add(x: 2, y: $y)\n  }',
+          variables: { y: 2 }
+        })
+        break
+    }
+  })
+
+  const app = buildApp(t, { stream }, { logVariables: true, logBody: true })
+
+  const query1 = `query QueryOne {
+    counter
+  }`
+
+  const query2 = `query QueryTwo($y: Int!) {
+    four: add(x: 2, y: $y)
+  }`
+
+  const response = await app.inject({
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    url: '/graphql',
+    body: JSON.stringify([
+      { operationName: 'QueryOne', query: query1 },
+      { operationName: 'QueryTwo', query: query2, variables: { y: 2 } },
+      { operationName: 'BadQuery', query: 'query DoubleQuery ($x: Int!) {---' } // Malformed query
+    ])
+  })
+  t.deepEqual(response.json(), [
+    {
+      data: {
+        counter: 0
+      }
+    },
+    {
+      data: {
+        four: 4
+      }
+    },
+    {
+      data: null,
+      errors: [
+        {
+          locations: [{ column: 32, line: 1 }],
+          message: 'Syntax Error: Invalid number, expected digit but got: "-".'
+        }
+      ]
+    }
+  ])
+})
+
+test('should log batched queries when logBody is a custom function', async (t) => {
+  t.plan(6)
+  const stream = split(JSON.parse)
+  stream.on('data', (line) => {
+    t.is(line.reqId, 'req-1')
+    switch (line.graphql?.operationName) {
+      case 'QueryOne':
+        t.deepEqual(line.graphql, {
+          operationName: 'QueryOne',
+          queries: ['counter'],
+          variables: null
+        })
+        break
+      case 'QueryTwo':
+        t.deepEqual(line.graphql, {
+          operationName: 'QueryTwo',
+          queries: ['add'],
+          body: 'query QueryTwo($y: Int!) {\n    four: add(x: 2, y: $y)\n  }',
+          variables: { y: 2 }
+        })
+        break
+    }
+  })
+
+  const app = buildApp(t, { stream }, {
+    logVariables: true,
+    logBody: (context, body) => {
+      const currentBody = body ?? context.reply.request.body
+      return !!currentBody.query.match(/QueryTwo/)
+    }
+  })
+
+  const query1 = `query QueryOne {
+    counter
+  }`
+
+  const query2 = `query QueryTwo($y: Int!) {
+    four: add(x: 2, y: $y)
+  }`
+
+  const response = await app.inject({
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    url: '/graphql',
+    body: JSON.stringify([
+      { operationName: 'QueryOne', query: query1 },
+      { operationName: 'QueryTwo', query: query2, variables: { y: 2 } },
+      { operationName: 'BadQuery', query: 'query DoubleQuery ($x: Int!) {---' } // Malformed query
+    ])
+  })
+  t.deepEqual(response.json(), [
+    {
+      data: {
+        counter: 0
+      }
+    },
+    {
+      data: {
+        four: 4
+      }
+    },
+    {
+      data: null,
+      errors: [
+        {
+          locations: [{ column: 32, line: 1 }],
+          message: 'Syntax Error: Invalid number, expected digit but got: "-".'
+        }
+      ]
+    }
+  ])
 })
 
 test('should log prepend the alias', async (t) => {
@@ -238,17 +446,20 @@ test('should log the request body based on the function', async (t) => {
     switch (line.reqId) {
       case 'req-1':
         t.deepEqual(line.graphql, {
+          operationName: 'logMe',
           queries: ['echo']
         })
         break
       case 'req-2':
         t.deepEqual(line.graphql, {
+          operationName: 'logMe',
           queries: ['echo'],
           body: query
         })
         break
       case 'req-3':
         t.deepEqual(line.graphql, {
+          operationName: 'logMe',
           queries: ['echo']
         })
         break
@@ -319,6 +530,7 @@ test('should log the request variables', async (t) => {
   stream.on('data', line => {
     t.is(line.reqId, 'req-1')
     t.deepEqual(line.graphql, {
+      operationName: 'boom',
       queries: ['add', 'add', 'echo'],
       variables: { num: 2 }
     })
