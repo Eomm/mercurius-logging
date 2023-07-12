@@ -1,6 +1,6 @@
 {
   "name": "mercurius-logging",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Log the GraphQL details",
   "main": "index.js",
   "types": "types/index.d.ts",
