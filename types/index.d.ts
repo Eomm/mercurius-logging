@@ -11,6 +11,7 @@ declare namespace mercuriusLogging {
     prependAlias?: boolean
     logBody?: boolean | ((context: MercuriusContext) => boolean)
     logVariables?: boolean
+    logRequest?: boolean
   }
 
   export const mercuriusLogging: MercuriusLogging

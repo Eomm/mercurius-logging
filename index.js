@@ -26,7 +26,8 @@ function mercuriusLogging (app, opts, next) {
     logLevel: 'info',
     prependAlias: false,
     logBody: false,
-    logVariables: false
+    logVariables: false,
+    logRequest: false
   }, opts)
 
   options.buildBody = opts.logBody === true
@@ -57,6 +58,7 @@ function logGraphQLDetails (opts, schema, document, context) {
     : context.reply.request.body
 
   context.reply.request.log[opts.logLevel]({
+    req: opts.logRequest === true ? context.reply.request : undefined,
     graphql: {
       queries: queryOps.length > 0 ? queryOps : undefined,
       mutations: mutationOps.length > 0 ? mutationOps : undefined,

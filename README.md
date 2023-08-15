@@ -138,6 +138,7 @@ app.register(mercuriusLogging, {
   prependAlias: true, // default: false
   logBody: true, // default: false
   logVariables: true, // default: false
+  logRequest: true // default: false
 })
 ```
 
@@ -145,6 +146,32 @@ app.register(mercuriusLogging, {
 
 The log level of the plugin. Note that the `request` logger is used, so you will get the additional
 [request data](https://www.fastify.io/docs/latest/Reference/Logging/#usage) such as the `reqId`.
+
+### logRequest
+
+Add to the log line the `req: request` object. This is useful if you want to log the request's headers or other.
+You can customize what to log by using the `logSerializers` option of Fastify.
+
+```js
+const app = Fastify({
+  logger: {
+    level: 'debug',
+    serializers: {
+      req: function reqSerializer (req) {
+        // look at the standard serializer for the req object:
+        // https://github.com/pinojs/pino-std-serializers/
+        return {
+          headers: req.headers
+        }
+      }
+    }
+  }
+})
+
+app.register(mercuriusLogging, {
+  logRequest: true
+})
+```
 
 ### prependAlias
 
