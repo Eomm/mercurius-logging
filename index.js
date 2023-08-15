@@ -44,18 +44,22 @@ function logGraphQLDetails (opts, schema, document, context) {
   const queryOps = readOps(document, 'query', opts)
   const mutationOps = readOps(document, 'mutation', opts)
 
+  const requestBody = context.reply.request.method !== 'GET'
+    ? context.reply.request.body
+    : context.reply.request.query
+
   // operationName can be provided at the request level, or it can be provided by query/mutation.
   // If it's provided by both, the request level takes precedence.
-  const operationName = context.reply.request.body.operationName || readOperationName(document)
+  const operationName = requestBody.operationName || readOperationName(document)
   const isCurrentOperation = (op) => op.operationName === operationName
 
   // Runs on a single operation at a time in a batched query, so we need to pull out
   // the relevant operation from the batch to be able to log variables for it.
-  const isBatch = Array.isArray(context.reply.request.body)
+  const isBatch = Array.isArray(requestBody)
   const isDetailedLog = opts.logVariables || opts.logBody
   const currentBody = isDetailedLog && isBatch
-    ? context.reply.request.body.find(isCurrentOperation)
-    : context.reply.request.body
+    ? requestBody.find(isCurrentOperation)
+    : requestBody
 
   context.reply.request.log[opts.logLevel]({
     req: opts.logRequest === true ? context.reply.request : undefined,
