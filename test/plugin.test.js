@@ -63,10 +63,11 @@ function buildApp (t, logger, opts) {
 }
 
 test('should log every query', async (t) => {
-  t.plan(3)
+  t.plan(4)
 
   const stream = split(JSON.parse)
   stream.on('data', line => {
+    t.is(line.req, undefined)
     t.is(line.reqId, 'req-1')
     t.deepEqual(line.graphql, {
       queries: ['add', 'add', 'echo', 'counter']
@@ -623,4 +624,96 @@ test('should log the whole request when operationName is set', async (t) => {
   })
 
   t.deepEqual(response.json(), { data: { c: 5, d: 5 } })
+})
+
+test('should log the request object when logRequest is true', async (t) => {
+  t.plan(2)
+
+  const query = `
+  query boom($num: Int!) {
+    a: add(x: $num, y: $num)
+    b: add(x: $num, y: $num)
+  }
+  query baam($num: Int!, $bin: Int!) {
+    c: add(x: $num, y: $bin)
+    d: add(x: $num, y: $bin)
+  }
+  `
+
+  const stream = split(JSON.parse)
+  stream.on('data', line => {
+    t.is(line.reqId, 'req-1')
+    t.deepEqual(line.req, {
+      method: 'POST',
+      url: '/graphql',
+      hostname: 'localhost:80',
+      remoteAddress: '127.0.0.1'
+    })
+  })
+
+  const app = buildApp(t, { stream }, {
+    logRequest: true,
+    logVariables: true
+  })
+
+  await app.inject({
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    url: '/graphql',
+    body: JSON.stringify({
+      query,
+      operationName: 'baam',
+      variables: { num: 2, bin: 3 }
+    })
+  })
+})
+
+test('user can customize the log the request object when logRequest is true', async (t) => {
+  t.plan(3)
+
+  const query = `
+  query boom($num: Int!) {
+    a: add(x: $num, y: $num)
+    b: add(x: $num, y: $num)
+  }
+  `
+
+  const stream = split(JSON.parse)
+  stream.on('data', line => {
+    t.is(line.reqId, 'req-1')
+    t.deepEqual(line.req, {
+      headers: {
+        'content-length': '131',
+        'content-type': 'application/json',
+        foo: 'bar',
+        host: 'localhost:80',
+        'user-agent': 'lightMyRequest'
+      }
+    })
+  })
+
+  const app = buildApp(t, {
+    stream,
+    serializers: {
+      req: function reqSerializer (req) {
+        t.pass('reqSerializer called')
+        return {
+          headers: req.headers
+        }
+      }
+    }
+  }, {
+    logRequest: true,
+    logVariables: true
+  })
+
+  await app.inject({
+    method: 'POST',
+    headers: { 'content-type': 'application/json', foo: 'bar' },
+    url: '/graphql',
+    body: JSON.stringify({
+      query,
+      variables: { num: 2 }
+    })
+  })
 })

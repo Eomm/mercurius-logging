@@ -23,3 +23,9 @@ app.register(plugin, {
   logBody: (context: MercuriusContext) => true,
   logVariables: false
 })
+
+// Using options with different types
+app.register(plugin, {
+  logLevel: 'warn',
+  logRequest: true
+})
