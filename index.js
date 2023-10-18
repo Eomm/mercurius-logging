@@ -6,6 +6,19 @@ function noop () {
   return undefined
 }
 
+function isArrayOfStrings (arr) {
+  if (!Array.isArray(arr)) {
+    return false
+  }
+
+  for (let i = 0; i < arr.length; i++) {
+    if (typeof arr[i] !== 'string') {
+      return false
+    }
+  }
+  return true
+}
+
 function simpleBody (_context, body) {
   return body.query
 }
@@ -21,13 +34,28 @@ function conditionalBody (fn, context, body) {
   return undefined
 }
 
+function customLogMessage (fn, context) {
+  try {
+    const logMessage = fn(context)
+
+    // Custom message value could be a string or a string array (pino formatting)
+    if (typeof logMessage === 'string' || isArrayOfStrings(logMessage)) {
+      return logMessage
+    }
+  } catch (error) {
+    context.app.log.debug(error, 'mercurius-logging: error in logMessage function')
+  }
+  return undefined
+}
+
 function mercuriusLogging (app, opts, next) {
   const options = Object.assign({}, {
     logLevel: 'info',
     prependAlias: false,
     logBody: false,
     logVariables: false,
-    logRequest: false
+    logRequest: false,
+    logMessage: undefined
   }, opts)
 
   options.buildBody = opts.logBody === true
@@ -35,6 +63,10 @@ function mercuriusLogging (app, opts, next) {
     : typeof opts.logBody === 'function'
       ? conditionalBody.bind(null, opts.logBody)
       : noop
+
+  options.buildLogMessage = typeof opts.logMessage === 'function'
+    ? customLogMessage.bind(null, opts.logMessage)
+    : noop
 
   app.graphql.addHook('preExecution', logGraphQLDetails.bind(null, options))
   next()
@@ -66,7 +98,7 @@ function logGraphQLDetails (opts, schema, document, context) {
     ? requestBody.find(isCurrentOperation)
     : requestBody
 
-  context.reply.request.log[opts.logLevel]({
+  const logData = {
     req: opts.logRequest === true ? context.reply.request : undefined,
     graphql: {
       queries: queryOps.length > 0 ? queryOps : undefined,
@@ -75,7 +107,15 @@ function logGraphQLDetails (opts, schema, document, context) {
       body: opts.buildBody(context, currentBody),
       variables: opts.logVariables === true ? currentBody?.variables || null : undefined
     }
-  })
+  }
+
+  const logMessage = opts.buildLogMessage(context)
+
+  if (Array.isArray(logMessage)) {
+    return context.reply.request.log[opts.logLevel](logData, ...logMessage)
+  }
+
+  return context.reply.request.log[opts.logLevel](logData, logMessage)
 }
 
 function readOperationName (document) {
