@@ -103,6 +103,9 @@ Here a complete example when you turn on all the log options:
 }
 ```
 
+If the [mercurius `graphql` decorator](https://github.com/mercurius-js/mercurius/blob/master/docs/api/options.md#appgraphqlsource-context-variables-operationname) is used, it is necessary to provide a `context` object: `app.graphql(query, { reply })`.
+Otherwise, this plugin will ignore the request.
+
 ## Install
 
 ```

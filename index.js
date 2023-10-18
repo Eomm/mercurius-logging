@@ -41,6 +41,11 @@ function mercuriusLogging (app, opts, next) {
 }
 
 function logGraphQLDetails (opts, schema, document, context) {
+  // Reply object could be undefined. In this case, we can't log.
+  if (!context.reply) {
+    return
+  }
+
   const queryOps = readOps(document, 'query', opts)
   const mutationOps = readOps(document, 'mutation', opts)
 
