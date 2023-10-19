@@ -166,13 +166,13 @@ test('should log with msg using a logMessage function returning a string', async
 test('should log with msg using a logMessage function returning a string array', async (t) => {
   t.plan(5)
 
-  const customLogMessage = (context) => [`This is a request made with method ${context.reply.request.method} by %s`, 'AdminUser']
+  const customLogMessage = (context) => [`This is a request made with method ${context.reply.request.method} by foo%s`, 'bar']
 
   const stream = jsonLogger(
     line => {
       t.is(line.req, undefined)
       t.is(line.reqId, 'req-1')
-      t.deepEqual(line.msg, 'This is a request made with method POST by AdminUser')
+      t.deepEqual(line.msg, 'This is a request made with method POST by foobar')
       t.deepEqual(line.graphql, {
         operationName: 'logMe',
         queries: ['add', 'add', 'echo', 'counter']

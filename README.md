@@ -142,6 +142,7 @@ app.register(mercuriusLogging, {
   logBody: true, // default: false
   logVariables: true, // default: false
   logRequest: true // default: false
+  logMessage: function(context) // default: undefined
 })
 ```
 
@@ -241,6 +242,63 @@ If you want to include the request's variables in the log output, set this optio
   }
 }
 ```
+
+
+### logMessage
+
+If you want to put a custom message inside the log output, you can set this option as a `function(context)` which returns a `string` or `string array`. If function provided doesn't return an allowed value, log message will be `undefined`.
+
+#### Example returning a string
+
+```js
+app.register(mercuriusLogging, {
+  logMessage: function (context) {
+    return `This is a request made with method ${context.reply.request.method}`
+  }
+})
+```
+
+Here's an output example
+
+```json
+{
+  "level": 30,
+  "graphql": {
+    "queries": [
+      "firstQuery:myTeam",
+      "secondQuery:myTeam"
+    ],
+    "msg": "This is a request made with method POST"
+  }
+}
+```
+
+#### Example returning a string array
+
+```js
+app.register(mercuriusLogging, {
+  logMessage: function (context) {
+    return [`This is a request made with method ${context.reply.request.method} by foo%s` , `bar` ]
+  }
+})
+```
+
+Here's an output example
+
+```json
+{
+  "level": 30,
+  "graphql": {
+    "queries": [
+      "firstQuery:myTeam",
+      "secondQuery:myTeam"
+    ],
+    "msg": "This is a request made with method POST by foobar"
+  }
+}
+```
+
+
 
 
 ## License
