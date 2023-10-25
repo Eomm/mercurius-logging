@@ -246,7 +246,7 @@ If you want to include the request's variables in the log output, set this optio
 
 ### logMessage
 
-If you want to put a custom message inside the log output, you can set this option as a `function(context)` which returns a `string` or `string array`. If function provided doesn't return an allowed value, log message will be `undefined`.
+If you want to put a custom message inside the log output, you can set this option as a `function(context)` which returns a `string` or an `array` containing Pino supported values.
 
 #### Example returning a string
 
@@ -267,13 +267,13 @@ Here's an output example
     "queries": [
       "firstQuery:myTeam",
       "secondQuery:myTeam"
-    ],
-    "msg": "This is a request made with method POST"
-  }
+    ]
+  },
+  "msg": "This is a request made with method POST"
 }
 ```
 
-#### Example returning a string array
+#### Example returning an array
 
 ```js
 app.register(mercuriusLogging, {
@@ -292,9 +292,9 @@ Here's an output example
     "queries": [
       "firstQuery:myTeam",
       "secondQuery:myTeam"
-    ],
-    "msg": "This is a request made with method POST by foobar"
-  }
+    ]
+  },
+  "msg": "This is a request made with method POST by foobar"
 }
 ```
 

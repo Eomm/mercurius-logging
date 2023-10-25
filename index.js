@@ -6,19 +6,6 @@ function noop () {
   return undefined
 }
 
-function isArrayOfStrings (arr) {
-  if (!Array.isArray(arr)) {
-    return false
-  }
-
-  for (let i = 0; i < arr.length; i++) {
-    if (typeof arr[i] !== 'string') {
-      return false
-    }
-  }
-  return true
-}
-
 function simpleBody (_context, body) {
   return body.query
 }
@@ -37,11 +24,7 @@ function conditionalBody (fn, context, body) {
 function customLogMessage (fn, context) {
   try {
     const logMessage = fn(context)
-
-    // Custom message value could be a string or a string array (pino formatting)
-    if (typeof logMessage === 'string' || isArrayOfStrings(logMessage)) {
-      return logMessage
-    }
+    return logMessage
   } catch (error) {
     context.app.log.debug(error, 'mercurius-logging: error in logMessage function')
   }
@@ -66,7 +49,7 @@ function mercuriusLogging (app, opts, next) {
 
   options.buildLogMessage = typeof opts.logMessage === 'function'
     ? customLogMessage.bind(null, opts.logMessage)
-    : noop
+    : undefined
 
   app.graphql.addHook('preExecution', logGraphQLDetails.bind(null, options))
   next()
@@ -109,13 +92,14 @@ function logGraphQLDetails (opts, schema, document, context) {
     }
   }
 
-  const logMessage = opts.buildLogMessage(context)
+  const logMessage = opts.buildLogMessage?.(context)
 
-  if (Array.isArray(logMessage)) {
-    return context.reply.request.log[opts.logLevel](logData, ...logMessage)
+  if (!logMessage) {
+    context.reply.request.log[opts.logLevel](logData)
+    return
   }
 
-  return context.reply.request.log[opts.logLevel](logData, logMessage)
+  context.reply.request.log[opts.logLevel].apply(context.reply.request.log, [logData].concat(logMessage))
 }
 
 function readOperationName (document) {
