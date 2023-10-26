@@ -23,8 +23,7 @@ function conditionalBody (fn, context, body) {
 
 function customLogMessage (fn, context) {
   try {
-    const logMessage = fn(context)
-    return logMessage
+    return fn(context)
   } catch (error) {
     context.app.log.debug(error, 'mercurius-logging: error in logMessage function')
   }

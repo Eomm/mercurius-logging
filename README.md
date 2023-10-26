@@ -278,7 +278,7 @@ Here's an output example
 ```js
 app.register(mercuriusLogging, {
   logMessage: function (context) {
-    return [`This is a request made with method ${context.reply.request.method} by foo%s` , `bar` ]
+    return ['This is a request made with method %s by foo%s', context.reply.request.method, 'bar' ]
   }
 })
 ```
