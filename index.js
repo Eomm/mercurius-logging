@@ -21,13 +21,23 @@ function conditionalBody (fn, context, body) {
   return undefined
 }
 
+function customLogMessage (fn, context) {
+  try {
+    return fn(context)
+  } catch (error) {
+    context.app.log.debug(error, 'mercurius-logging: error in logMessage function')
+  }
+  return undefined
+}
+
 function mercuriusLogging (app, opts, next) {
   const options = Object.assign({}, {
     logLevel: 'info',
     prependAlias: false,
     logBody: false,
     logVariables: false,
-    logRequest: false
+    logRequest: false,
+    logMessage: undefined
   }, opts)
 
   options.buildBody = opts.logBody === true
@@ -35,6 +45,10 @@ function mercuriusLogging (app, opts, next) {
     : typeof opts.logBody === 'function'
       ? conditionalBody.bind(null, opts.logBody)
       : noop
+
+  options.buildLogMessage = typeof opts.logMessage === 'function'
+    ? customLogMessage.bind(null, opts.logMessage)
+    : undefined
 
   app.graphql.addHook('preExecution', logGraphQLDetails.bind(null, options))
   next()
@@ -66,7 +80,7 @@ function logGraphQLDetails (opts, schema, document, context) {
     ? requestBody.find(isCurrentOperation)
     : requestBody
 
-  context.reply.request.log[opts.logLevel]({
+  const logData = {
     req: opts.logRequest === true ? context.reply.request : undefined,
     graphql: {
       queries: queryOps.length > 0 ? queryOps : undefined,
@@ -75,7 +89,16 @@ function logGraphQLDetails (opts, schema, document, context) {
       body: opts.buildBody(context, currentBody),
       variables: opts.logVariables === true ? currentBody?.variables || null : undefined
     }
-  })
+  }
+
+  const logMessage = opts.buildLogMessage?.(context)
+
+  if (!logMessage) {
+    context.reply.request.log[opts.logLevel](logData)
+    return
+  }
+
+  context.reply.request.log[opts.logLevel].apply(context.reply.request.log, [logData].concat(logMessage))
 }
 
 function readOperationName (document) {
