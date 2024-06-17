@@ -12,6 +12,7 @@ declare namespace mercuriusLogging {
     logBody?: boolean | ((context: MercuriusContext) => boolean)
     logVariables?: boolean
     logRequest?: boolean
+    logMessage?: ((context: MercuriusContext) => string | unknown[])
   }
 
   export const mercuriusLogging: MercuriusLogging
