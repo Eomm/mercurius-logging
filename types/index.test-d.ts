@@ -21,7 +21,7 @@ app.register(plugin, {
 app.register(plugin, {
   logLevel: 'info',
   prependAlias: false,
-  logBody: (context: MercuriusContext) => true,  
+  logBody: (context: MercuriusContext) => true,
   logVariables: false,
   logMessage: (context: MercuriusContext) => ['This is a custom log message? Answer: %s', true]
 })
