@@ -14,7 +14,7 @@ app.register(plugin, {
   prependAlias: true,
   logBody: true,
   logVariables: true,
-  logMessage: (context: MercuriusContext) => "This is a custom log message",
+  logMessage: (context: MercuriusContext) => 'This is a custom log message'
 })
 
 // 3. Using options with different types
@@ -23,12 +23,11 @@ app.register(plugin, {
   prependAlias: false,
   logBody: (context: MercuriusContext) => true,  
   logVariables: false,
-  logMessage: (context: MercuriusContext) => ["This is a custom log message? Answer: %s", true],
-
+  logMessage: (context: MercuriusContext) => ['This is a custom log message? Answer: %s', true]
 })
 
 // Using options with different types
 app.register(plugin, {
   logLevel: 'warn',
-  logRequest: true,
+  logRequest: true
 })
