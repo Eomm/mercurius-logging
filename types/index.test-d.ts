@@ -1,3 +1,4 @@
+
 import fastify from 'fastify'
 import { MercuriusContext } from 'mercurius'
 

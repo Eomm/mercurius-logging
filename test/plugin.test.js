@@ -30,7 +30,7 @@ test('should log every query', async (t) => {
     url: '/graphql',
     body: JSON.stringify({ query })
   })
-  t.deepEqual(response.json(), {
+  t.same(response.json(), {
     data: {
       four: 4,
       six: 6,
@@ -273,7 +273,7 @@ test('should log prepend the alias', async (t) => {
     url: '/graphql',
     body: JSON.stringify({ query })
   })
-  t.deepEqual(response.json(), {
+  t.same(response.json(), {
     data: {
       four: 4,
       six: 6,
@@ -308,7 +308,7 @@ test('should log every mutation', async (t) => {
     body: JSON.stringify({ query })
   })
 
-  t.deepEqual(response.json(), {
+  t.same(response.json(), {
     data: {
       plusOne: 1,
       minusOne: 0,
@@ -338,7 +338,7 @@ test('should log at debug level', async (t) => {
     body: JSON.stringify({ query })
   })
 
-  t.deepEqual(response.json(), {
+  t.same(response.json(), {
     data: {
       plusOne: 2
     }
@@ -371,7 +371,7 @@ test('should log the request body', async (t) => {
     url: '/graphql',
     body: JSON.stringify({ query })
   })
-  t.deepEqual(response.json(), {
+  t.same(response.json(), {
     data: { four: 4, six: 6, echo: 'hellohello' }
   })
 })
@@ -429,7 +429,7 @@ test('should log the request body based on the function', async (t) => {
       url: '/graphql',
       body: JSON.stringify({ query, variables: { txt: 'false' } })
     })
-    t.deepEqual(response.json(), {
+    t.same(response.json(), {
       data: { echo: 'falsefalse' }
     })
   }
@@ -441,7 +441,7 @@ test('should log the request body based on the function', async (t) => {
       url: '/graphql',
       body: JSON.stringify({ query, variables: { txt: 'true' } })
     })
-    t.deepEqual(response.json(), {
+    t.same(response.json(), {
       data: { echo: 'truetrue' }
     })
   }
@@ -453,7 +453,7 @@ test('should log the request body based on the function', async (t) => {
       url: '/graphql',
       body: JSON.stringify({ query, variables: { txt: 'err' } })
     })
-    t.deepEqual(response.json(), {
+    t.same(response.json(), {
       data: { echo: 'errerr' }
     })
   }
@@ -487,7 +487,7 @@ test('should log the request variables', async (t) => {
     body: JSON.stringify({ query, variables: { num: 2 } })
   })
 
-  t.deepEqual(response.json(), {
+  t.same(response.json(), {
     data: { a: 4, b: 4, echo: 'hellohello' }
   })
 })
@@ -518,7 +518,7 @@ test('should log the request variables as null when missing', async (t) => {
     body: JSON.stringify({ query })
   })
 
-  t.deepEqual(response.json(), {
+  t.same(response.json(), {
     data: { add: 4, echo: 'hellohello' }
   })
 })
@@ -564,7 +564,7 @@ test('should log the whole request when operationName is set', async (t) => {
     })
   })
 
-  t.deepEqual(response.json(), { data: { c: 5, d: 5 } })
+  t.same(response.json(), { data: { c: 5, d: 5 } })
 })
 
 test('should log the request object when logRequest is true', async (t) => {

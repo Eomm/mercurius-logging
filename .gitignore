@@ -104,6 +104,3 @@ dist
 .tern-port
 .vscode/
 package-lock.json
-
-# Wallaby.js configuration
-wallaby.conf.js
