@@ -110,3 +110,5 @@ wallaby.conf.js
 test/*
 .github/*
 .eslintrc
+.tap
+asd*
