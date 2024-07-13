@@ -1,5 +1,3 @@
-/* eslint no-use-before-define: "off" */
-
 import { FastifyPluginCallback } from 'fastify'
 import { MercuriusContext } from 'mercurius'
 

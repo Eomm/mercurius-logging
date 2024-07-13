@@ -1,7 +1,8 @@
 # mercurius-logging
 
-[![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 [![ci](https://github.com/Eomm/mercurius-logging/actions/workflows/ci.yml/badge.svg)](https://github.com/Eomm/mercurius-logging/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/mercurius-logging)](https://www.npmjs.com/package/mercurius-logging)
+[![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 
 This plugin add a Log with all the GraphQL details you need.
 
@@ -111,6 +112,13 @@ Otherwise, this plugin will ignore the request.
 ```
 npm install mercurius-logging
 ```
+
+### Compatibility
+
+| Plugin version | Fastify version |
+| ------------- |:---------------:|
+| `^2.0.0` | `^5.0.0` |
+| `^1.0.0` | `^4.0.0` |
 
 ## Usage
 
