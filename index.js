@@ -126,7 +126,7 @@ function readOps (document, operation, opts) {
 const plugin = fp(mercuriusLogging,
   {
     name: 'mercurius-logging',
-    fastify: '4.x',
+    fastify: '^5.x',
     dependencies: ['mercurius']
   }
 )
