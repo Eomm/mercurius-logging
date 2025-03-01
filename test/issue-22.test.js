@@ -1,6 +1,6 @@
 'use strict'
 
-const { test } = require('tap')
+const { test } = require('node:test')
 const { buildApp, jsonLogger } = require('./_helper')
 
 test('should deal GET request', async (t) => {
@@ -8,9 +8,9 @@ test('should deal GET request', async (t) => {
 
   const stream = jsonLogger(
     line => {
-      t.same(line.req, undefined)
-      t.same(line.reqId, 'req-1')
-      t.same(line.graphql, {
+      t.assert.deepStrictEqual(line.req, undefined)
+      t.assert.deepStrictEqual(line.reqId, 'req-1')
+      t.assert.deepStrictEqual(line.graphql, {
         queries: ['add', 'add', 'echo', 'counter']
       })
     })
@@ -30,7 +30,7 @@ test('should deal GET request', async (t) => {
     url: '/graphql',
     query: { query }
   })
-  t.same(response.json(), {
+  t.assert.deepStrictEqual(response.json(), {
     data: {
       four: 4,
       six: 6,
@@ -56,8 +56,8 @@ test('should log the whole request when operationName same set', async (t) => {
 
   const stream = jsonLogger(
     line => {
-      t.same(line.reqId, 'req-1')
-      t.same(line.graphql, {
+      t.assert.deepStrictEqual(line.reqId, 'req-1')
+      t.assert.deepStrictEqual(line.graphql, {
         queries: ['add', 'add', 'add', 'add'],
         operationName: 'baam',
         body: query,
@@ -81,5 +81,5 @@ test('should log the whole request when operationName same set', async (t) => {
     }
   })
 
-  t.same(response.json(), { data: { c: 5, d: 5 } })
+  t.assert.deepStrictEqual(response.json(), { data: { c: 5, d: 5 } })
 })

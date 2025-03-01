@@ -49,7 +49,7 @@ exports.buildApp = function buildApp (t, logger, opts) {
     logger,
     disableRequestLogging: true
   })
-  t.teardown(app.close.bind(app))
+  t.after(() => app.close())
 
   app.register(mercurius, {
     schema,
