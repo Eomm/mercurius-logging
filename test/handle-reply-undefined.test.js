@@ -1,6 +1,6 @@
 'use strict'
 
-const { test } = require('tap')
+const { test } = require('node:test')
 const { buildApp, jsonLogger } = require('./_helper')
 
 test('should handle without logging when context.reply is undefined', async (t) => {
@@ -24,7 +24,7 @@ test('should handle without logging when context.reply is undefined', async (t) 
     url: '/custom-endpoint'
   })
 
-  t.same(response.json(), {
+  t.assert.deepStrictEqual(response.json(), {
     data: {
       four: 4,
       six: 6,
@@ -39,9 +39,9 @@ test('should log when using graphql mercurius decorator providing reply object i
 
   const stream = jsonLogger(
     line => {
-      t.same(line.req, undefined)
-      t.same(line.reqId, 'req-1')
-      t.same(line.graphql, {
+      t.assert.deepStrictEqual(line.req, undefined)
+      t.assert.deepStrictEqual(line.reqId, 'req-1')
+      t.assert.deepStrictEqual(line.graphql, {
         queries: ['add', 'add', 'echo', 'counter']
       })
     })
@@ -64,7 +64,7 @@ test('should log when using graphql mercurius decorator providing reply object i
     url: '/custom-endpoint'
   })
 
-  t.same(response.json(), {
+  t.assert.deepStrictEqual(response.json(), {
     data: {
       four: 4,
       six: 6,

@@ -1,6 +1,6 @@
 'use strict'
 
-const { test } = require('tap')
+const { test } = require('node:test')
 const { buildApp, jsonLogger } = require('./_helper')
 
 test('should log without msg when logMessage is undefined', async (t) => {
@@ -8,10 +8,10 @@ test('should log without msg when logMessage is undefined', async (t) => {
 
   const stream = jsonLogger(
     line => {
-      t.equal(line.req, undefined)
-      t.equal(line.reqId, 'req-1')
-      t.same(line.msg, undefined)
-      t.same(line.graphql, {
+      t.assert.strictEqual(line.req, undefined)
+      t.assert.strictEqual(line.reqId, 'req-1')
+      t.assert.deepStrictEqual(line.msg, undefined)
+      t.assert.deepStrictEqual(line.graphql, {
         operationName: 'logMe',
         queries: ['add', 'add', 'echo', 'counter']
       })
@@ -32,7 +32,7 @@ test('should log without msg when logMessage is undefined', async (t) => {
     url: '/graphql',
     body: JSON.stringify({ query })
   })
-  t.same(response.json(), {
+  t.assert.deepStrictEqual(response.json(), {
     data: {
       four: 4,
       six: 6,
@@ -47,10 +47,10 @@ test('should log without msg when logMessage is\'nt a valid function', async (t)
 
   const stream = jsonLogger(
     line => {
-      t.equal(line.req, undefined)
-      t.equal(line.reqId, 'req-1')
-      t.same(line.msg, undefined)
-      t.same(line.graphql, {
+      t.assert.strictEqual(line.req, undefined)
+      t.assert.strictEqual(line.reqId, 'req-1')
+      t.assert.deepStrictEqual(line.msg, undefined)
+      t.assert.deepStrictEqual(line.graphql, {
         operationName: 'logMe',
         queries: ['add', 'add', 'echo', 'counter']
       })
@@ -71,7 +71,7 @@ test('should log without msg when logMessage is\'nt a valid function', async (t)
     url: '/graphql',
     body: JSON.stringify({ query })
   })
-  t.same(response.json(), {
+  t.assert.deepStrictEqual(response.json(), {
     data: {
       four: 4,
       six: 6,
@@ -88,10 +88,10 @@ test('should log without msg using a logMessage function returning an undefined 
 
   const stream = jsonLogger(
     line => {
-      t.equal(line.req, undefined)
-      t.equal(line.reqId, 'req-1')
-      t.same(line.msg, undefined)
-      t.same(line.graphql, {
+      t.assert.strictEqual(line.req, undefined)
+      t.assert.strictEqual(line.reqId, 'req-1')
+      t.assert.deepStrictEqual(line.msg, undefined)
+      t.assert.deepStrictEqual(line.graphql, {
         operationName: 'logMe',
         queries: ['add', 'add', 'echo', 'counter']
       })
@@ -112,7 +112,7 @@ test('should log without msg using a logMessage function returning an undefined 
     url: '/graphql',
     body: JSON.stringify({ query })
   })
-  t.same(response.json(), {
+  t.assert.deepStrictEqual(response.json(), {
     data: {
       four: 4,
       six: 6,
@@ -129,10 +129,10 @@ test('should log without msg using a logMessage function throwing an error', asy
 
   const stream = jsonLogger(
     line => {
-      t.equal(line.req, undefined)
-      t.equal(line.reqId, 'req-1')
-      t.same(line.msg, undefined)
-      t.same(line.graphql, {
+      t.assert.strictEqual(line.req, undefined)
+      t.assert.strictEqual(line.reqId, 'req-1')
+      t.assert.deepStrictEqual(line.msg, undefined)
+      t.assert.deepStrictEqual(line.graphql, {
         operationName: 'logMe',
         queries: ['add', 'add', 'echo', 'counter']
       })
@@ -153,7 +153,7 @@ test('should log without msg using a logMessage function throwing an error', asy
     url: '/graphql',
     body: JSON.stringify({ query })
   })
-  t.same(response.json(), {
+  t.assert.deepStrictEqual(response.json(), {
     data: {
       four: 4,
       six: 6,
@@ -170,10 +170,10 @@ test('should log with msg using a logMessage function returning a string', async
 
   const stream = jsonLogger(
     line => {
-      t.equal(line.req, undefined)
-      t.equal(line.reqId, 'req-1')
-      t.same(line.msg, 'This is a request made with method POST')
-      t.same(line.graphql, {
+      t.assert.strictEqual(line.req, undefined)
+      t.assert.strictEqual(line.reqId, 'req-1')
+      t.assert.deepStrictEqual(line.msg, 'This is a request made with method POST')
+      t.assert.deepStrictEqual(line.graphql, {
         operationName: 'logMe',
         queries: ['add', 'add', 'echo', 'counter']
       })
@@ -194,7 +194,7 @@ test('should log with msg using a logMessage function returning a string', async
     url: '/graphql',
     body: JSON.stringify({ query })
   })
-  t.same(response.json(), {
+  t.assert.deepStrictEqual(response.json(), {
     data: {
       four: 4,
       six: 6,
@@ -211,10 +211,10 @@ test('should log with msg using a logMessage function returning an array', async
 
   const stream = jsonLogger(
     line => {
-      t.equal(line.req, undefined)
-      t.equal(line.reqId, 'req-1')
-      t.same(line.msg, 'This is a request made with method POST by foobar')
-      t.same(line.graphql, {
+      t.assert.strictEqual(line.req, undefined)
+      t.assert.strictEqual(line.reqId, 'req-1')
+      t.assert.deepStrictEqual(line.msg, 'This is a request made with method POST by foobar')
+      t.assert.deepStrictEqual(line.graphql, {
         operationName: 'logMe',
         queries: ['add', 'add', 'echo', 'counter']
       })
@@ -235,7 +235,7 @@ test('should log with msg using a logMessage function returning an array', async
     url: '/graphql',
     body: JSON.stringify({ query })
   })
-  t.same(response.json(), {
+  t.assert.deepStrictEqual(response.json(), {
     data: {
       four: 4,
       six: 6,
