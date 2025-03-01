@@ -19,5 +19,5 @@ declare namespace mercuriusLogging {
   export { mercuriusLogging as default }
 }
 
-declare function plugin(...params: Parameters<MercuriusLogging>): ReturnType<MercuriusLogging>
+declare function plugin (...params: Parameters<MercuriusLogging>): ReturnType<MercuriusLogging>
 export = plugin
